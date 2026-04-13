@@ -4,7 +4,7 @@ class FinsangMartAPI {
 
   constructor(
     baseURL: string = process.env.NEXT_PUBLIC_BACKEND_URL ||
-      "http://localhost:3001/api"
+      "https://finsang.onrender.com/api"
   ) {
     this.baseURL = baseURL;
   }

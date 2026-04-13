@@ -44,6 +44,7 @@ const allowedOrigins = [
   "http://13.235.1.46:3000",
   "https://admin.finsang.in",
   "http://localhost:3000",
+  "https://finsang.onrender.com"
 ];
 
 app.use(
