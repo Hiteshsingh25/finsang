@@ -32,54 +32,64 @@ class FinsangMartAPI {
     localStorage.removeItem("finsangmart_token");
   }
 
-  private async request(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<any> {
-    const url = `${this.baseURL}${endpoint}`;
-    const config: RequestInit = {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-      ...options,
-    };
+private async request(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<any> {
+  const url = `${this.baseURL}${endpoint}`;
 
-    if (this.token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${this.token}`,
-      };
+  const config: RequestInit = {
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+    ...options,
+  };
+
+  if (this.token) {
+    config.headers = {
+      ...config.headers,
+      Authorization: `Bearer ${this.token}`,
+    };
+  }
+
+  try {
+    const response = await fetch(url, config);
+
+    const text = await response.text(); // 👈 CHANGE
+
+    let data;
+    try {
+      data = JSON.parse(text); // 👈 SAFE PARSE
+    } catch {
+      console.error("❌ Non-JSON Response:", text);
+      throw new Error(text); // 👈 actual backend error dikhega
     }
 
-    try {
-      const response = await fetch(url, config);
-      const data = await response.json();
+    if (!response.ok) {
+      console.error("API Error Response:", {
+        status: response.status,
+        url,
+        data,
+      });
 
-      if (!response.ok) {
-        console.error("API Error Response:", {
-          status: response.status,
-          statusText: response.statusText,
-          url: url,
-          data: data,
-        });
-        throw new Error(
-          data.error ||
-            data.details ||
-            `HTTP ${response.status}: ${response.statusText}`
-        );
-      }
-
-      return data;
-    } catch (error) {
-      console.error("API Request Error:", error);
       throw new Error(
-        `API request failed: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+        data?.error ||
+        data?.message ||
+        `HTTP ${response.status}`
       );
     }
+
+    return data;
+  } catch (error) {
+    console.error("API Request Error:", error);
+    throw new Error(
+      `API request failed: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
+}
 
   // Admin Authentication Methods
   async adminSignup(email: string, password: string, name: string) {
